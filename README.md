@@ -25,7 +25,7 @@ base-crosschain-bridge/
 🚀 Installation and Setup
 1. Clone the repository
 
-git clone https://github.com/tonynotstonks/base-crosschain-bridge.git
+git clone https://github.com/tonynotstonks/Base-Cross-Chain-Bridge.git
 cd base-crosschain-bridge
 2. Install dependencies
 npm install
@@ -103,11 +103,8 @@ Deployment Steps:
 Configure your hardhat.config.js with Base and other network settings
 Set your private key in .env file
 Run deployment script:
-bash
-
-
-1
 npx hardhat run scripts/deploy.js --network base
+
 🔒 Security Considerations
 Security Measures:
 Multi-Signature - Require multiple signatures for critical operations
@@ -116,10 +113,12 @@ Input Validation - Comprehensive input validation
 Access Control - Role-based access control
 Transaction Verification - Double-check transaction integrity
 Emergency Pause - Emergency pause mechanism
+
 Audit Status:
 Initial security audit completed
 Formal verification in progress
 Community review underway
+
 📈 Performance Metrics
 Gas Efficiency:
 Transaction initiation: ~80,000 gas
@@ -129,6 +128,8 @@ Fee update: ~20,000 gas
 Transaction Speed:
 Average confirmation time: < 3 seconds
 Peak throughput: 200+ transactions/second
+
+
 🔄 Future Enhancements
 Planned Features:
 Enhanced Security - Advanced cryptographic protocols
@@ -137,26 +138,15 @@ Governance Integration - Community-driven bridge governance
 Analytics Dashboard - Real-time bridge analytics
 Mobile Application - Native mobile bridge app
 Cross-Chain DApps - Integration with other DeFi protocols
+
+
 🤝 Contributing
 We welcome contributions to improve the Base Cross-Chain Bridge:
-
 Fork the repository
 Create your feature branch (git checkout -b feature/AmazingFeature)
 Commit your changes (git commit -m 'Add some AmazingFeature')
 Push to the branch (git push origin feature/AmazingFeature)
 Open a pull request
+
 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-📞 Support
-For support, please open an issue on our GitHub repository or contact us at:
-
-Email: support@basecrosschainbridge.com
-Twitter: @BaseCrossChain
-Discord: Base Cross-Chain Community
-🌐 Links
-GitHub Repository: https://github.com/yourusername/base-crosschain-bridge
-Base Network: https://base.org
-Documentation: https://docs.basecrosschainbridge.com
-Community Forum: https://community.basecrosschainbridge.com
-Built with ❤️ on Base Network
