@@ -1,4 +1,5 @@
 Base Cross-Chain Bridge
+
 📋 Project Description
 Base Cross-Chain Bridge is a decentralized bridge that enables seamless token transfers between different blockchain networks, specifically designed for the Base ecosystem. This bridge facilitates cross-chain liquidity and interoperability while maintaining security and decentralization.
 
@@ -10,18 +11,6 @@ Standards: ERC-20, ERC-721
 Libraries: OpenZeppelin, Chainlink
 🏗️ Project Architecture
 
-
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
 base-crosschain-bridge/
 ├── contracts/
 │   ├── CrossChainBridge.sol
@@ -35,37 +24,19 @@ base-crosschain-bridge/
 └── README.md
 🚀 Installation and Setup
 1. Clone the repository
-bash
 
-
-1
-2
-git clone https://github.com/yourusername/base-crosschain-bridge.git
+git clone https://github.com/tonynotstonks/base-crosschain-bridge.git
 cd base-crosschain-bridge
 2. Install dependencies
-bash
-
-
-1
 npm install
 3. Compile contracts
-bash
-
-
-1
 npx hardhat compile
 4. Run tests
-bash
-
-
-1
 npx hardhat test
 5. Deploy to Base network
-bash
-
-
-1
 npx hardhat run scripts/deploy.js --network base
+
+
 💰 Features
 Core Functionality:
 ✅ Cross-chain token transfers
@@ -74,6 +45,7 @@ Core Functionality:
 ✅ Liquidity provision
 ✅ Transaction monitoring
 ✅ Fee management
+
 Advanced Features:
 Multi-Chain Compatibility - Supports multiple blockchain networks
 Liquidity Pools - Incentivized liquidity provision
@@ -82,34 +54,24 @@ Security Protocols - Multi-signature verification
 Real-time Monitoring - Transaction status tracking
 Fee Optimization - Dynamic fee structure
 🛠️ Smart Contract Functions
+
 Core Functions:
 initiateBridge(uint256 chainId, address receiver, address token, uint256 amount) - Initiate cross-chain transfer
 completeBridge(uint256 transactionId, bytes32 txHash, uint256 chainId) - Complete cross-chain transaction
 registerChain(uint256 chainId, address bridgeContract, bool enabled) - Register new blockchain network
 setFeePercentage(uint256 fee) - Set transaction fee percentage
 getBridgeStats() - Get bridge statistics
+
 Events:
 TransactionInitiated - Emitted when cross-chain transaction is initiated
 TransactionCompleted - Emitted when transaction is completed
 ChainRegistered - Emitted when new chain is registered
 FeeUpdated - Emitted when fee is updated
 LiquidityAdded - Emitted when liquidity is added
+
+
 📊 Contract Structure
 Transaction Structure:
-solidity
-
-
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
 struct CrossChainTransaction {
     uint256 transactionId;
     address sender;
@@ -122,21 +84,14 @@ struct CrossChainTransaction {
     bool cancelled;
 }
 Chain Configuration:
-solidity
 
-
-1
-2
-3
-4
-5
-6
 struct ChainConfig {
     bool enabled;
     address bridgeContract;
     uint256 gasLimit;
     uint256 fee;
 }
+
 ⚡ Deployment Process
 Prerequisites:
 Node.js >= 14.x
