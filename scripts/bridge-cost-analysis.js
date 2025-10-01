@@ -1,4 +1,4 @@
-// base-crosschain-bridge/scripts/cost-analysis.js
+
 const { ethers } = require("hardhat");
 const fs = require("fs");
 
