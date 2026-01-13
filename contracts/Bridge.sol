@@ -86,7 +86,7 @@ contract CrossChainBridge is Ownable {
         completedRequests[requestHash] = true;
         request.completed = true;
         
-        // Transfer tokens to receiver
+
         request.token.transfer(request.receiver, request.amount);
         
         emit BridgeCompleted(requestId, request.receiver, address(request.token), request.amount);
