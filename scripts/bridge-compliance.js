@@ -20,7 +20,7 @@ async function checkBridgeCompliance() {
   };
   
   try {
-    // Статус соответствия
+
     const complianceStatus = await bridge.getComplianceStatus();
     complianceReport.complianceStatus = {
       regulatoryCompliance: complianceStatus.regulatoryCompliance,
