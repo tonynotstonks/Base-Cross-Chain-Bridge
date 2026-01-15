@@ -8,7 +8,7 @@ async function checkBridgeCompliance() {
   const bridgeAddress = "0x...";
   const bridge = await ethers.getContractAt("CrossChainBridgeV3", bridgeAddress);
   
-  // Проверка соответствия стандартам
+  
   const complianceReport = {
     timestamp: new Date().toISOString(),
     bridgeAddress: bridgeAddress,
