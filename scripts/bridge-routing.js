@@ -46,7 +46,7 @@ async function optimizeBridgeRouting() {
     uptime: performanceMetrics.uptime.toString()
   };
   
-  // Рекомендации по маршрутизации
+
   if (parseFloat(costAnalysis.avgTransactionCost) > 100000000000000000) { // 0.1 ETH
     routingInfo.routingRecommendations.push("Consider alternative routes with lower costs");
   }
