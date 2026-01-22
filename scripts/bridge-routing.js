@@ -8,7 +8,7 @@ async function optimizeBridgeRouting() {
   const bridgeAddress = "0x...";
   const bridge = await ethers.getContractAt("CrossChainBridgeV3", bridgeAddress);
   
-  // Получение информации о маршрутах
+
   const routingInfo = {
     timestamp: new Date().toISOString(),
     bridgeAddress: bridgeAddress,
@@ -18,7 +18,7 @@ async function optimizeBridgeRouting() {
     routingRecommendations: []
   };
   
-  // Получение оптимальных маршрутов
+ 
   const optimalRoutes = await bridge.getOptimalRoutes();
   routingInfo.optimalRoutes = optimalRoutes.map(route => ({
     fromChain: route.fromChain.toString(),
@@ -28,7 +28,7 @@ async function optimizeBridgeRouting() {
     successRate: route.successRate.toString()
   }));
   
-  // Анализ стоимости
+
   const costAnalysis = await bridge.getCostAnalysis();
   routingInfo.costAnalysis = {
     avgTransactionCost: costAnalysis.avgTransactionCost.toString(),
