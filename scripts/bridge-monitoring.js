@@ -1,4 +1,4 @@
-// base-crosschain-bridge/scripts/monitoring.js
+
 const { ethers } = require("hardhat");
 const fs = require("fs");
 
