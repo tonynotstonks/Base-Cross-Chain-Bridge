@@ -21,7 +21,7 @@ async function monitorBridgeOperations() {
   };
   
   try {
-    // Статус операций
+
     const operationalStatus = await bridge.getOperationalStatus();
     monitoringReport.operationalStatus = {
       isOperational: operationalStatus.isOperational,
