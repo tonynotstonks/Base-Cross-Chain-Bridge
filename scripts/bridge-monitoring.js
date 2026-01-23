@@ -8,7 +8,7 @@ async function monitorBridgeOperations() {
   const bridgeAddress = "0x...";
   const bridge = await ethers.getContractAt("CrossChainBridgeV3", bridgeAddress);
   
-  // Мониторинг операций
+ 
   const monitoringReport = {
     timestamp: new Date().toISOString(),
     bridgeAddress: bridgeAddress,
