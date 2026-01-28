@@ -97,5 +97,5 @@ contract CrossChainBridge is Ownable {
         uint256 amount
     ) external onlyOwner {
         token.transfer(owner(), amount);
-    }
+    } 
 }
