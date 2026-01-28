@@ -95,7 +95,7 @@ contract CrossChainBridgeV2 is Ownable, ReentrancyGuard {
         transactionTimeout = _transactionTimeout;
     }
 
-    // Конфигурация сети
+
     function configureChain(
         uint256 chainId,
         address bridgeContract,
