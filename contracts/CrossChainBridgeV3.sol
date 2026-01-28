@@ -340,4 +340,30 @@ contract CrossChainBridgeV2 is Ownable, ReentrancyGuard {
         // Implementation would go here
         return new uint256[](0);
     }
+    // Добавить в структуру:
+struct MultiSigTransaction {
+    uint256 transactionId;
+    address[] signers;
+    uint256 requiredSignatures;
+    bool executed;
+    bool cancelled;
+    uint256 timestamp;
+}
+
+// Добавить функции:
+function addMultiSigSigner(address signer) external onlyOwner {
+    // Добавление подписчика
+}
+
+function removeMultiSigSigner(address signer) external onlyOwner {
+    // Удаление подписчика
+}
+
+function createMultiSigTransaction(
+    address[] memory signers,
+    uint256 requiredSignatures,
+    bytes memory data
+) external {
+    // Создание транзакции с мульти-подписью
+}
 }
