@@ -366,4 +366,174 @@ function createMultiSigTransaction(
 ) external {
     // Создание транзакции с мульти-подписью
 }
+// Добавить структуры:
+struct TransactionMonitor {
+    uint256 transactionId;
+    address sender;
+    address receiver;
+    address token;
+    uint256 amount;
+    uint256 chainId;
+    uint256 timestamp;
+    uint256 status; // 0: pending, 1: completed, 2: failed, 3: cancelled
+    string statusMessage;
+    uint256 lastUpdate;
+    bytes32 txHash;
+    mapping(address => bool) notificationsSent;
+}
+
+struct Notification {
+    uint256 id;
+    address recipient;
+    string title;
+    string message;
+    uint256 timestamp;
+    bool read;
+    uint256 type; // 0: transaction, 1: system, 2: security
+}
+
+// Добавить маппинги:
+mapping(uint256 => TransactionMonitor) public transactionMonitors;
+mapping(address => Notification[]) public userNotifications;
+mapping(address => uint256) public userNotificationCount;
+
+// Добавить события:
+event TransactionMonitored(
+    uint256 indexed transactionId,
+    address indexed sender,
+    address indexed receiver,
+    address token,
+    uint256 amount,
+    uint256 chainId,
+    uint256 timestamp,
+    string statusMessage
+);
+
+event NotificationSent(
+    uint256 indexed notificationId,
+    address indexed recipient,
+    string title,
+    string message,
+    uint256 timestamp,
+    uint256 type
+);
+
+event TransactionStatusUpdated(
+    uint256 indexed transactionId,
+    uint256 status,
+    string statusMessage,
+    uint256 timestamp
+);
+
+// Добавить функции:
+function monitorTransaction(
+    uint256 transactionId,
+    address sender,
+    address receiver,
+    address token,
+    uint256 amount,
+    uint256 chainId
+) external {
+    require(transactionId > 0, "Invalid transaction ID");
+    
+    TransactionMonitor storage monitor = transactionMonitors[transactionId];
+    
+    monitor.transactionId = transactionId;
+    monitor.sender = sender;
+    monitor.receiver = receiver;
+    monitor.token = token;
+    monitor.amount = amount;
+    monitor.chainId = chainId;
+    monitor.timestamp = block.timestamp;
+    monitor.status = 0; // pending
+    monitor.statusMessage = "Transaction initiated";
+    monitor.lastUpdate = block.timestamp;
+    
+    emit TransactionMonitored(transactionId, sender, receiver, token, amount, chainId, block.timestamp, "Transaction initiated");
+}
+
+function updateTransactionStatus(
+    uint256 transactionId,
+    uint256 status,
+    string memory statusMessage
+) external {
+    TransactionMonitor storage monitor = transactionMonitors[transactionId];
+    require(monitor.transactionId != 0, "Transaction not found");
+    
+    monitor.status = status;
+    monitor.statusMessage = statusMessage;
+    monitor.lastUpdate = block.timestamp;
+    
+    emit TransactionStatusUpdated(transactionId, status, statusMessage, block.timestamp);
+    
+    // Send notification
+    sendTransactionNotification(transactionId, status, statusMessage);
+}
+
+function sendTransactionNotification(
+    uint256 transactionId,
+    uint256 status,
+    string memory statusMessage
+) internal {
+    TransactionMonitor storage monitor = transactionMonitors[transactionId];
+    
+    // Send notification to sender
+    if (monitor.sender != address(0) && !monitor.notificationsSent[monitor.sender]) {
+        sendNotification(monitor.sender, "Transaction Status Update", 
+            string(abi.encodePacked("Transaction ", transactionId, " status: ", statusMessage)), 0);
+        monitor.notificationsSent[monitor.sender] = true;
+    }
+    
+    // Send notification to receiver
+    if (monitor.receiver != address(0) && !monitor.notificationsSent[monitor.receiver]) {
+        sendNotification(monitor.receiver, "Transaction Received", 
+            string(abi.encodePacked("You received a transaction ", transactionId, " with status: ", statusMessage)), 0);
+        monitor.notificationsSent[monitor.receiver] = true;
+    }
+}
+
+function sendNotification(
+    address recipient,
+    string memory title,
+    string memory message,
+    uint256 type
+) internal {
+    uint256 notificationId = userNotificationCount[recipient]++;
+    
+    Notification memory notification = Notification({
+        id: notificationId,
+        recipient: recipient,
+        title: title,
+        message: message,
+        timestamp: block.timestamp,
+        read: false,
+        type: type
+    });
+    
+    userNotifications[recipient].push(notification);
+    
+    emit NotificationSent(notificationId, recipient, title, message, block.timestamp, type);
+}
+
+function getUserNotifications(address user) external view returns (Notification[] memory) {
+    return userNotifications[user];
+}
+
+function markNotificationAsRead(address user, uint256 notificationId) external {
+    require(notificationId < userNotifications[user].length, "Invalid notification ID");
+    
+    userNotifications[user][notificationId].read = true;
+}
+
+function getTransactionMonitor(uint256 transactionId) external view returns (TransactionMonitor memory) {
+    return transactionMonitors[transactionId];
+}
+
+function getTransactionStatus(uint256 transactionId) external view returns (uint256) {
+    return transactionMonitors[transactionId].status;
+}
+
+function getTransactionStatusMessage(uint256 transactionId) external view returns (string memory) {
+    return transactionMonitors[transactionId].statusMessage;
+}
 }
