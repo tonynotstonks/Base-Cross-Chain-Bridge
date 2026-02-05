@@ -297,7 +297,7 @@ contract CrossChainBridgeV2 is Ownable, ReentrancyGuard {
         emit MerkleRootUpdated(root, block.timestamp, expiry);
     }
 
-    // Get transaction info
+
     function getTransactionInfo(uint256 transactionId) external view returns (BridgeRequest memory) {
         return bridgeRequests[transactionId];
     }
@@ -425,7 +425,7 @@ event TransactionStatusUpdated(
     uint256 timestamp
 );
 
-// Добавить функции:
+
 function monitorTransaction(
     uint256 transactionId,
     address sender,
@@ -545,7 +545,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract CrossChainBridge is Ownable, ReentrancyGuard {
-    // Существующие структуры и функции...
+
     
     // Новые структуры для мульти-подписей
     struct MultiSigTransaction {
