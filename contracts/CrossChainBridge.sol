@@ -547,7 +547,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 contract CrossChainBridge is Ownable, ReentrancyGuard {
 
     
-    // Новые структуры для мульти-подписей
+  
     struct MultiSigTransaction {
         uint256 transactionId;
         address[] signers;
