@@ -536,4 +536,276 @@ function getTransactionStatus(uint256 transactionId) external view returns (uint
 function getTransactionStatusMessage(uint256 transactionId) external view returns (string memory) {
     return transactionMonitors[transactionId].statusMessage;
 }
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
+contract CrossChainBridge is Ownable, ReentrancyGuard {
+    // Существующие структуры и функции...
+    
+    // Новые структуры для мульти-подписей
+    struct MultiSigTransaction {
+        uint256 transactionId;
+        address[] signers;
+        uint256 requiredSignatures;
+        bool executed;
+        bool cancelled;
+        uint256 timestamp;
+        bytes data;
+        bytes32 txHash;
+        uint256 chainId;
+        uint256 nonce;
+        mapping(address => bool) signatures;
+    }
+    
+    struct MultiSigConfig {
+        address[] signers;
+        uint256 requiredSignatures;
+        uint256 threshold;
+        bool enabled;
+        uint256 lastUpdate;
+    }
+    
+    struct TransactionVerification {
+        bytes32 txHash;
+        address[] verifiedBy;
+        uint256 verificationCount;
+        uint256 timestamp;
+        bool verified;
+        uint256 confidenceScore;
+    }
+    
+    // Новые маппинги
+    mapping(uint256 => MultiSigTransaction) public multiSigTransactions;
+    mapping(address => MultiSigConfig) public multiSigConfigs;
+    mapping(bytes32 => TransactionVerification) public transactionVerifications;
+    mapping(address => bool) public multiSigSigners;
+    
+    // Новые события
+    event MultiSigTransactionCreated(
+        uint256 indexed transactionId,
+        address[] signers,
+        uint256 requiredSignatures,
+        uint256 timestamp
+    );
+    
+    event TransactionSigned(
+        uint256 indexed transactionId,
+        address indexed signer,
+        uint256 timestamp
+    );
+    
+    event TransactionExecuted(
+        uint256 indexed transactionId,
+        bool success,
+        uint256 timestamp
+    );
+    
+    event MultiSigConfigUpdated(
+        address indexed owner,
+        address[] signers,
+        uint256 requiredSignatures,
+        uint256 timestamp
+    );
+    
+    event TransactionVerified(
+        bytes32 indexed txHash,
+        address indexed verifier,
+        uint256 confidenceScore,
+        uint256 timestamp
+    );
+    
+    // Новые функции для мульти-подписей
+    function addMultiSigSigner(address signer) external onlyOwner {
+        require(signer != address(0), "Invalid signer address");
+        require(!multiSigSigners[signer], "Signer already added");
+        
+        multiSigSigners[signer] = true;
+        
+        emit MultiSigConfigUpdated(msg.sender, new address[](0), 0, block.timestamp);
+    }
+    
+    function removeMultiSigSigner(address signer) external onlyOwner {
+        require(multiSigSigners[signer], "Signer not found");
+        
+        multiSigSigners[signer] = false;
+        
+        emit MultiSigConfigUpdated(msg.sender, new address[](0), 0, block.timestamp);
+    }
+    
+    function createMultiSigTransaction(
+        address[] memory signers,
+        uint256 requiredSignatures,
+        bytes memory data,
+        uint256 chainId,
+        uint256 nonce
+    ) external {
+        require(requiredSignatures <= signers.length, "Required signatures exceed signers");
+        require(requiredSignatures > 0, "Required signatures must be greater than 0");
+        
+        // Проверка, что все подписчики действительны
+        for (uint256 i = 0; i < signers.length; i++) {
+            require(multiSigSigners[signers[i]], "Invalid signer");
+        }
+        
+        uint256 transactionId = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, signers.length)));
+        
+        bytes32 txHash = keccak256(abi.encodePacked(
+            msg.sender,
+            signers,
+            data,
+            chainId,
+            nonce,
+            block.timestamp
+        ));
+        
+        multiSigTransactions[transactionId] = MultiSigTransaction({
+            transactionId: transactionId,
+            signers: signers,
+            requiredSignatures: requiredSignatures,
+            executed: false,
+            cancelled: false,
+            timestamp: block.timestamp,
+             data,
+            txHash: txHash,
+            chainId: chainId,
+            nonce: nonce
+        });
+        
+        emit MultiSigTransactionCreated(transactionId, signers, requiredSignatures, block.timestamp);
+    }
+    
+    function signTransaction(uint256 transactionId) external {
+        MultiSigTransaction storage transaction = multiSigTransactions[transactionId];
+        require(!transaction.executed, "Transaction already executed");
+        require(!transaction.cancelled, "Transaction cancelled");
+        require(multiSigSigners[msg.sender], "Not a multi-sig signer");
+        
+        // Проверка, что адрес является подписчиком
+        bool isSigner = false;
+        for (uint256 i = 0; i < transaction.signers.length; i++) {
+            if (transaction.signers[i] == msg.sender) {
+                isSigner = true;
+                break;
+            }
+        }
+        require(isSigner, "Not authorized to sign");
+        
+        // Проверка, что еще не подписан
+        require(!transaction.signatures[msg.sender], "Already signed");
+        
+        transaction.signatures[msg.sender] = true;
+        
+        emit TransactionSigned(transactionId, msg.sender, block.timestamp);
+    }
+    
+    function executeTransaction(uint256 transactionId) external {
+        MultiSigTransaction storage transaction = multiSigTransactions[transactionId];
+        require(!transaction.executed, "Transaction already executed");
+        require(!transaction.cancelled, "Transaction cancelled");
+        
+        // Подсчет подписей
+        uint256 signatureCount = 0;
+        for (uint256 i = 0; i < transaction.signers.length; i++) {
+            if (transaction.signatures[transaction.signers[i]]) {
+                signatureCount++;
+            }
+        }
+        
+        require(signatureCount >= transaction.requiredSignatures, "Not enough signatures");
+        
+        // Выполнение транзакции (в реальной реализации будет вызов других функций)
+        transaction.executed = true;
+        
+        emit TransactionExecuted(transactionId, true, block.timestamp);
+    }
+    
+    function cancelTransaction(uint256 transactionId) external {
+        MultiSigTransaction storage transaction = multiSigTransactions[transactionId];
+        require(!transaction.executed, "Transaction already executed");
+        require(!transaction.cancelled, "Transaction already cancelled");
+        
+        // Только владелец или один из подписчиков может отменить
+        bool canCancel = false;
+        if (msg.sender == owner()) {
+            canCancel = true;
+        } else {
+            for (uint256 i = 0; i < transaction.signers.length; i++) {
+                if (transaction.signers[i] == msg.sender) {
+                    canCancel = true;
+                    break;
+                }
+            }
+        }
+        
+        require(canCancel, "Not authorized to cancel");
+        
+        transaction.cancelled = true;
+        
+        emit TransactionExecuted(transactionId, false, block.timestamp);
+    }
+    
+    function verifyTransaction(
+        bytes32 txHash,
+        address[] memory verifiers,
+        uint256 confidenceScore
+    ) external {
+        require(confidenceScore <= 10000, "Confidence score too high");
+        
+        TransactionVerification storage verification = transactionVerifications[txHash];
+        
+        if (!verification.verified) {
+            verification.txHash = txHash;
+            verification.verificationCount = 0;
+            verification.timestamp = block.timestamp;
+            verification.verified = false;
+            verification.confidenceScore = 0;
+        }
+        
+        // Добавить проверяющих
+        for (uint256 i = 0; i < verifiers.length; i++) {
+            verification.verifiedBy.push(verifiers[i]);
+        }
+        
+        verification.verificationCount += verifiers.length;
+        verification.confidenceScore = (verification.confidenceScore + confidenceScore) / 2;
+        
+        if (verification.verificationCount >= 3) { // Порог для подтверждения
+            verification.verified = true;
+        }
+        
+        emit TransactionVerified(txHash, msg.sender, confidenceScore, block.timestamp);
+    }
+    
+    function getMultiSigTransaction(uint256 transactionId) external view returns (MultiSigTransaction memory) {
+        return multiSigTransactions[transactionId];
+    }
+    
+    function getTransactionVerification(bytes32 txHash) external view returns (TransactionVerification memory) {
+        return transactionVerifications[txHash];
+    }
+    
+    function isMultiSigSigner(address signer) external view returns (bool) {
+        return multiSigSigners[signer];
+    }
+    
+    function getTransactionSignatures(uint256 transactionId) external view returns (address[] memory) {
+        MultiSigTransaction storage transaction = multiSigTransactions[transactionId];
+        return transaction.signers;
+    }
+    
+    function getTransactionSignatureStatus(uint256 transactionId, address signer) external view returns (bool) {
+        MultiSigTransaction storage transaction = multiSigTransactions[transactionId];
+        return transaction.signatures[signer];
+    }
+    
+    function getTransactionVerificationStatus(bytes32 txHash) external view returns (bool, uint256) {
+        TransactionVerification storage verification = transactionVerifications[txHash];
+        return (verification.verified, verification.confidenceScore);
+    }
+}
 }
