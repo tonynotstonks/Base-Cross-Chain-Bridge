@@ -813,6 +813,6 @@ function initiateBridge(
     require(receiver != address(0), "Invalid receiver address");
     require(address(token) != address(0), "Invalid token address");
     
-    // Остальной код...
+    
 }
 }
