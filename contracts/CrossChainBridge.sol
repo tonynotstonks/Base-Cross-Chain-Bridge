@@ -808,7 +808,7 @@ function initiateBridge(
     require(amount >= minimumAmount, "Amount below minimum");
     require(amount <= maximumAmount, "Amount above maximum");
     
-    // Добавленная проверка
+
     require(chainId > 0 && chainId < 1000000, "Invalid chain ID");
     require(receiver != address(0), "Invalid receiver address");
     require(address(token) != address(0), "Invalid token address");
