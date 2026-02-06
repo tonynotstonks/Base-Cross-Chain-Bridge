@@ -536,18 +536,7 @@ function getTransactionStatus(uint256 transactionId) external view returns (uint
 function getTransactionStatusMessage(uint256 transactionId) external view returns (string memory) {
     return transactionMonitors[transactionId].statusMessage;
 }
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-
-contract CrossChainBridge is Ownable, ReentrancyGuard {
-
-    
-  
     struct MultiSigTransaction {
         uint256 transactionId;
         address[] signers;
@@ -807,5 +796,23 @@ contract CrossChainBridge is Ownable, ReentrancyGuard {
         TransactionVerification storage verification = transactionVerifications[txHash];
         return (verification.verified, verification.confidenceScore);
     }
+    // Добавить в функцию initiateBridge
+function initiateBridge(
+    uint256 chainId,
+    address receiver,
+    IERC20 token,
+    uint256 amount
+) external payable {
+    require(chainConfigs[chainId].enabled, "Chain not enabled");
+    require(chainId != block.chainid, "Cannot bridge to same chain");
+    require(amount >= minimumAmount, "Amount below minimum");
+    require(amount <= maximumAmount, "Amount above maximum");
+    
+    // Добавленная проверка
+    require(chainId > 0 && chainId < 1000000, "Invalid chain ID");
+    require(receiver != address(0), "Invalid receiver address");
+    require(address(token) != address(0), "Invalid token address");
+    
+    // Остальной код...
 }
 }
