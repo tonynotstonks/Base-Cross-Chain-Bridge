@@ -13,7 +13,7 @@ contract CrossChainBridge is Ownable, Pausable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     IERC20 public immutable token;
-    uint256 public immutable thisChainId;
+    uint256 public immutable thisChainId; 
 
     mapping(address => bool) public isValidator;
     uint256 public threshold;
