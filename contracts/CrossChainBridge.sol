@@ -47,7 +47,7 @@ contract CrossChainBridge is Ownable, Pausable, ReentrancyGuard {
         require(amount > 0, "amount=0");
         require(to != address(0), "to=0");
         require(toChainId != thisChainId, "same chain");
-        require(!usedNonce[nonce], "nonce used");
+        require(!usedNonce[nonce], "nonce used"); 
 
         usedNonce[nonce] = true;
         token.safeTransferFrom(msg.sender, address(this), amount);
