@@ -8,9 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract CrossChainBridge is Ownable, Pausable, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-    using ECDSA for bytes32;
+
 
     IERC20 public immutable token; 
     uint256 public immutable thisChainId; 
