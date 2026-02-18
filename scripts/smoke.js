@@ -7,7 +7,7 @@ async function main() {
   const deployments = JSON.parse(fs.readFileSync(depPath, "utf8"));
 
   const bridgeAddr = deployments.contracts.CrossChainBridge;
-    const tokenAddr = deployments.contracts.Token;
+  const tokenAddr = deployments.contracts.Token;
 
   const [owner, user] = await ethers.getSigners();
   const bridge = await ethers.getContractAt("CrossChainBridge", bridgeAddr);
