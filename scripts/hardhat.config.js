@@ -48,7 +48,6 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_API_KEY || ""
   },
 
-  // Some projects may have different folder structures.
 
   paths: {
     sources: "./contracts",
