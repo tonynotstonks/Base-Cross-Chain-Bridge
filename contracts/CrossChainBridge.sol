@@ -45,4 +45,7 @@ contract NFTMarketplaceRoyalties is ERC721URIStorage, ERC2981, Ownable {
     function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage, ERC2981) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+    function rescueLocked(address token, address to, uint256 amount) external onlyOwner {
+    IERC20(token).transfer(to, amount);
+}
 }
