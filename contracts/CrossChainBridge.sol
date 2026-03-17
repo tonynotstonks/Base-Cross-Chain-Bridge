@@ -1,51 +1,72 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-
-
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract NFTMarketplaceRoyalties is ERC721URIStorage, ERC2981, Ownable {
-    uint256 public nextTokenId = 1;
+contract CrossChainBridge is Ownable, Pausable {
+    using SafeERC20 for IERC20;
 
-    event DefaultRoyaltySet(address receiver, uint96 feeNumerator);
-    event TokenRoyaltySet(uint256 indexed tokenId, address receiver, uint96 feeNumerator);
-    event Minted(address indexed to, uint256 indexed tokenId, string uri);
+    IERC20 public token;
+    uint256 public thisChainId;
 
-    constructor(address defaultReceiver, uint96 defaultFee) ERC721("BaseNFT", "BNFT") Ownable(msg.sender) {
-        require(defaultReceiver != address(0), "receiver=0");
-        _setDefaultRoyalty(defaultReceiver, defaultFee);
-        emit DefaultRoyaltySet(defaultReceiver, defaultFee);
+    mapping(address => bool) public isValidator;
+    uint256 public validatorCount;
+    uint256 public threshold;
+
+    mapping(bytes32 => bool) public processed;
+
+    event Locked(address indexed user, uint256 amount, uint256 toChain);
+    event Released(address indexed to, uint256 amount, bytes32 txHash);
+
+    constructor(
+        address _token,
+        uint256 _chainId,
+        address[] memory validators,
+        uint256 _threshold
+    ) {
+        token = IERC20(_token);
+        thisChainId = _chainId;
+
+        for (uint i = 0; i < validators.length; i++) {
+            isValidator[validators[i]] = true;
+        }
+
+        validatorCount = validators.length;
+        threshold = _threshold;
     }
 
-    function setDefaultRoyalty(address receiver, uint96 feeNumerator) external onlyOwner {
-        require(receiver != address(0), "receiver=0");
-        require(feeNumerator <= 2000, "too high");
-        _setDefaultRoyalty(receiver, feeNumerator);
-        emit DefaultRoyaltySet(receiver, feeNumerator);
+    function lock(uint256 amount, uint256 toChain) external whenNotPaused {
+        token.safeTransferFrom(msg.sender, address(this), amount);
+        emit Locked(msg.sender, amount, toChain);
     }
 
-    // Improvement
-    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external onlyOwner {
-        require(_exists(tokenId), "no token");
-        require(receiver != address(0), "receiver=0");
-        require(feeNumerator <= 2000, "too high");
-        _setTokenRoyalty(tokenId, receiver, feeNumerator);
-        emit TokenRoyaltySet(tokenId, receiver, feeNumerator);
+    function release(
+        address to,
+        uint256 amount,
+        bytes32 txHash
+    ) external {
+        require(isValidator[msg.sender], "not validator");
+        require(!processed[txHash], "processed");
+
+        processed[txHash] = true;
+
+        token.safeTransfer(to, amount);
+
+        emit Released(to, amount, txHash);
     }
 
-    function mint(address to, string calldata uri) external returns (uint256 tokenId) {
-        require(to != address(0), "to=0");
-        tokenId = nextTokenId++;
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
-        emit Minted(to, tokenId, uri);
+    function addValidator(address v) external onlyOwner {
+        isValidator[v] = true;
+        validatorCount++;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage, ERC2981) returns (bool) {
-        return super.supportsInterface(interfaceId);
+    function pause() external onlyOwner {
+        _pause();
     }
-    function rescueLocked(address token, address to, uint256 amount) external onlyOwner {
-    IERC20(token).transfer(to, amount);
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }
